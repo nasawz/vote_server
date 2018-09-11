@@ -2,7 +2,9 @@ import { ParseServer } from 'parse-server';
 import * as express from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
-
+import * as Boom from 'express-boom';
+import * as Session from 'express-session';
+import * as CookieParser from 'cookie-parser';
 import wxRoute from './controllers/wx/route';
 import qywxRoute from './controllers/qywx/route';
 import voteRoute from './controllers/vote/route';
@@ -13,6 +15,7 @@ import * as config from './config/config.json';
 
 let app = express();
 
+const __basename = path.dirname(__dirname);
 let api = new ParseServer(
   Object.assign(
     {
@@ -27,8 +30,16 @@ let api = new ParseServer(
     config.parse
   )
 );
-
+app.use(Boom());
+app.use(CookieParser());
+app.set('trust proxy', 1);
+app.use(
+  Session({
+    secret: 'skcjJdks'
+  })
+);
 app.use('/parse', api);
+app.use('/', express.static(path.resolve(__basename, 'static')));
 wxRoute('/wx', app);
 qywxRoute('/qywx', app);
 voteRoute('/vote', app);

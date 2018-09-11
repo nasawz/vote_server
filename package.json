@@ -17,8 +17,13 @@
   "author": "nasawz",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.18.0",
+    "cookie-parser": "^1.4.3",
     "express": "^4.16.3",
+    "express-boom": "^2.0.0",
+    "express-session": "^1.15.6",
     "http": "0.0.0",
+    "lodash": "^4.17.10",
     "node-weixin-api": "^0.5.1",
     "parse": "^2.1.0",
     "parse-server": "^3.0.0",
