@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as Boom from 'express-boom';
 import * as Session from 'express-session';
 import * as CookieParser from 'cookie-parser';
+import * as BodyParser from 'body-parser';
 import wxRoute from './controllers/wx/route';
 import qywxRoute from './controllers/qywx/route';
 import voteRoute from './controllers/vote/route';
@@ -32,6 +33,8 @@ let api = new ParseServer(
 );
 app.use(Boom());
 app.use(CookieParser());
+app.use(BodyParser.urlencoded({ extended: false }));
+app.use(BodyParser.json());
 app.set('trust proxy', 1);
 app.use(
   Session({

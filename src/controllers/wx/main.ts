@@ -1,5 +1,6 @@
 import { Parse } from '../../parse';
-import { auth, message } from 'node-weixin-api';
+import * as WechatAPI from 'wechat-api';
+// import { auth, message } from 'node-weixin-api';
 import axios from 'axios';
 import * as _ from 'lodash';
 axios.defaults.timeout = 6000;
@@ -29,6 +30,112 @@ let getAccessTokenByCode: any = (code, appid, secret) => {
       .catch(err => {
         reject(err);
       });
+  });
+};
+
+let getApi: any = async function(appid, secret, callback) {
+  let api = new WechatAPI(
+    appid,
+    secret,
+    async cb => {
+      const AT = Parse.Object.extend('access_token');
+      const query = new Parse.Query(AT);
+      query.equalTo('appid', appid);
+      let value = await query.first();
+      if (value) {
+        cb(null, JSON.parse(value.toJSON().token));
+      } else {
+        cb(null, null);
+      }
+    },
+    async (token, cb) => {
+      cb(null, token);
+      const AT = Parse.Object.extend('access_token');
+      const query = new Parse.Query(AT);
+      query.equalTo('appid', appid);
+      let value = await query.first();
+      if (value) {
+        value.set('token', JSON.stringify(token));
+        value
+          .save()
+          .then(res => {
+            console.log(`更新token ${JSON.stringify(token)}`);
+          })
+          .catch(err => {
+            console.log(`更新token ${JSON.stringify(err)}`);
+          });
+      } else {
+        let at = new AT({
+          appid,
+          token: JSON.stringify(token)
+        });
+        at.save()
+          .then(res => {
+            console.log(`新建token ${JSON.stringify(token)}`);
+          })
+          .catch(err => {
+            console.log(`新建token ${JSON.stringify(err)}`);
+          });
+      }
+    }
+  );
+
+  api.registerTicketHandle(
+    async (type, cb) => {
+      const AT = Parse.Object.extend('api_ticket');
+      const query = new Parse.Query(AT);
+      query.equalTo('appid', appid);
+      let value = await query.first();
+      if (value) {
+        cb(null, JSON.parse(value.toJSON().ticket));
+      } else {
+        cb(null, null);
+      }
+    },
+    async (type, ticket, cb) => {
+      cb(null, ticket);
+      const AT = Parse.Object.extend('api_ticket');
+      const query = new Parse.Query(AT);
+      query.equalTo('appid', appid);
+      let value = await query.first();
+      if (value) {
+        value.set('ticket', JSON.stringify(ticket));
+        value
+          .save()
+          .then(res => {
+            console.log(`更新ticket ${JSON.stringify(ticket)}`);
+          })
+          .catch(err => {
+            console.log(`更新ticket ${JSON.stringify(err)}`);
+          });
+      } else {
+        let at = new AT({
+          appid,
+          ticket: JSON.stringify(ticket)
+        });
+        at.save()
+          .then(res => {
+            console.log(`新建ticket ${JSON.stringify(ticket)}`);
+          })
+          .catch(err => {
+            console.log(`新建ticket ${JSON.stringify(err)}`);
+          });
+      }
+      cb(null);
+    }
+  );
+
+  callback(null, api);
+};
+
+let getJsConfig = (api, param) => {
+  return new Promise((resolve, reject) => {
+    api.getJsConfig(param, (err, result) => {
+      if (!err) {
+        return resolve(result);
+      }
+      return reject(err);
+    });
   });
 };
 
@@ -116,7 +223,61 @@ let oauth_response = async (req, res) => {
 };
 
 let jsconfig = async (req, res) => {
-  return res.json({ jsconfig: 1 });
+  let { url } = req.body;
+  if (!url) {
+    return res.boom.badRequest('miss url');
+  }
+  let { activityId } = req.params;
+  let { appid, secret } = await getConfig(activityId);
+  getApi(appid, secret, async (err, api) => {
+    let param = {
+      debug: false,
+      jsApiList: [
+        'onMenuShareTimeline',
+        'onMenuShareAppMessage',
+        'onMenuShareQQ',
+        'onMenuShareWeibo',
+        'onMenuShareQZone',
+        'startRecord',
+        'stopRecord',
+        'onVoiceRecordEnd',
+        'playVoice',
+        'pauseVoice',
+        'stopVoice',
+        'onVoicePlayEnd',
+        'uploadVoice',
+        'downloadVoice',
+        'chooseImage',
+        'previewImage',
+        'uploadImage',
+        'downloadImage',
+        'translateVoice',
+        'getNetworkType',
+        'openLocation',
+        'getLocation',
+        'hideOptionMenu',
+        'showOptionMenu',
+        'hideMenuItems',
+        'showMenuItems',
+        'hideAllNonBaseMenuItem',
+        'showAllNonBaseMenuItem',
+        'closeWindow',
+        'scanQRCode',
+        'chooseWXPay',
+        'openProductSpecificView',
+        'addCard',
+        'chooseCard',
+        'openCard'
+      ],
+      url: url
+    };
+    try {
+      let result = await getJsConfig(api, param);
+      return res.json(result);
+    } catch (error) {
+      return res.boom.badRequest('get jsconfig fail');
+    }
+  });
 };
 
 export { index, touch, oauth_response, jsconfig };
