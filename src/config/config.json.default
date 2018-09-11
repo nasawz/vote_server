@@ -1,0 +1,18 @@
+{
+  "parse": {
+    "databaseURI": "",
+    "appId": "",
+    "masterKey": "",
+    "javascriptKey": "",
+    "clientKey": "",
+    "restKey": "",
+    "serverURL": "",
+  },
+  "file": {
+    "accessKey": "",
+    "secretKey": "",
+    "bucket": "",
+    "bucketDomain": "",
+    "directAccess": false
+  }
+}
