@@ -3,7 +3,7 @@ import * as WechatAPI from 'wechat-api';
 // import { auth, message } from 'node-weixin-api';
 import axios from 'axios';
 import * as _ from 'lodash';
-axios.defaults.timeout = 6000;
+axios.defaults.timeout = 60000;
 
 let getConfig: any = activityId => {
   return new Promise(async (resolve, reject) => {
