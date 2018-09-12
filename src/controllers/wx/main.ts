@@ -43,6 +43,7 @@ let getApi: any = async function(appid, secret, callback) {
       query.equalTo('appid', appid);
       let value = await query.first();
       if (value) {
+        // console.log(`[wx]获取token ${value.toJSON().token}`);
         cb(null, JSON.parse(value.toJSON().token));
       } else {
         cb(null, null);
@@ -59,10 +60,10 @@ let getApi: any = async function(appid, secret, callback) {
         value
           .save()
           .then(res => {
-            console.log(`更新token ${JSON.stringify(token)}`);
+            console.log(`[wx]更新token ${JSON.stringify(token)}`);
           })
           .catch(err => {
-            console.log(`更新token ${JSON.stringify(err)}`);
+            console.log(`[wx]更新token ${JSON.stringify(err)}`);
           });
       } else {
         let at = new AT({
@@ -71,10 +72,10 @@ let getApi: any = async function(appid, secret, callback) {
         });
         at.save()
           .then(res => {
-            console.log(`新建token ${JSON.stringify(token)}`);
+            console.log(`[wx]新建token ${JSON.stringify(token)}`);
           })
           .catch(err => {
-            console.log(`新建token ${JSON.stringify(err)}`);
+            console.log(`[wx]新建token ${JSON.stringify(err)}`);
           });
       }
     }
@@ -87,6 +88,7 @@ let getApi: any = async function(appid, secret, callback) {
       query.equalTo('appid', appid);
       let value = await query.first();
       if (value) {
+        // console.log(`[wx]获取ticket ${value.toJSON().ticket}`);
         cb(null, JSON.parse(value.toJSON().ticket));
       } else {
         cb(null, null);
@@ -103,10 +105,10 @@ let getApi: any = async function(appid, secret, callback) {
         value
           .save()
           .then(res => {
-            console.log(`更新ticket ${JSON.stringify(ticket)}`);
+            console.log(`[wx]更新ticket ${JSON.stringify(ticket)}`);
           })
           .catch(err => {
-            console.log(`更新ticket ${JSON.stringify(err)}`);
+            console.log(`[wx]更新ticket ${JSON.stringify(err)}`);
           });
       } else {
         let at = new AT({
@@ -115,10 +117,10 @@ let getApi: any = async function(appid, secret, callback) {
         });
         at.save()
           .then(res => {
-            console.log(`新建ticket ${JSON.stringify(ticket)}`);
+            console.log(`[wx]新建ticket ${JSON.stringify(ticket)}`);
           })
           .catch(err => {
-            console.log(`新建ticket ${JSON.stringify(err)}`);
+            console.log(`[wx]新建ticket ${JSON.stringify(err)}`);
           });
       }
       cb(null);

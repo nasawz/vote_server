@@ -48,12 +48,21 @@ let getApi: any = async function(corpId, secret, agentid, callback) {
       query.equalTo('appid', agentid);
       let value = await query.first();
       if (value) {
-        cb(null, JSON.parse(value.toJSON().token));
+        if (new Date().getTime() > JSON.parse(value.toJSON().token).expireTime) {
+          // 过期
+          console.log(`[qywx]token过期`);
+          cb(null, null);
+        } else {
+          // console.log(`[qywx]获取token ${value.toJSON().token}`);
+          cb(null, JSON.parse(value.toJSON().token));
+        }
       } else {
         cb(null, null);
       }
     },
     async function(token, cb) {
+      let expireTime = new Date().getTime() + (7200 - 10) * 1000;
+      token.expireTime = expireTime;
       cb(null, token);
       const AT = Parse.Object.extend('access_token');
       const query = new Parse.Query(AT);
@@ -164,7 +173,7 @@ let oauth_response = async (req, res) => {
           return res.redirect(callback);
         });
       } else {
-        console.log('[qywx]企业登录失败 尝试用wx登录');
+        console.log('[qywx]企业登录失败 尝试用wx登录', err);
         let { callback } = req.session;
         let url = `${domain}/api/wx/auth/${activityId}?callback=${callback}`;
         return res.redirect(url);
