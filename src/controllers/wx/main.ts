@@ -196,14 +196,9 @@ let index = async (req, res) => {
   req.session.callback = decodeURIComponent(callback);
   req.session.save(function(err) {});
   let url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${encodeURIComponent(
-    `${domain}/wx/oauth_response/${activityId}`
+    `${domain}/api/wx/oauth_response/${activityId}`
   )}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`;
   return res.redirect(url);
-};
-
-let touch = async (req, res) => {
-  let { user } = req.session;
-  return res.json(user);
 };
 
 let oauth_response = async (req, res) => {
@@ -280,4 +275,4 @@ let jsconfig = async (req, res) => {
   });
 };
 
-export { index, touch, oauth_response, jsconfig };
+export { index, oauth_response, jsconfig };

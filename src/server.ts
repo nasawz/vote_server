@@ -9,6 +9,7 @@ import * as BodyParser from 'body-parser';
 import wxRoute from './controllers/wx/route';
 import qywxRoute from './controllers/qywx/route';
 import voteRoute from './controllers/vote/route';
+import userRoute from './controllers/user/route';
 
 import QNAdapter from './QNAdapter';
 
@@ -41,11 +42,12 @@ app.use(
     secret: 'skcjJdks'
   })
 );
-app.use('/parse', api);
+app.use('/api/parse', api);
 app.use('/', express.static(path.resolve(__basename, 'static')));
-wxRoute('/wx', app);
-qywxRoute('/qywx', app);
-voteRoute('/vote', app);
+wxRoute('/api/wx', app);
+qywxRoute('/api/qywx', app);
+voteRoute('/api/vote', app);
+userRoute('/api/user', app);
 
 app.listen(1337, function() {
   console.log('server running on port 1337.');

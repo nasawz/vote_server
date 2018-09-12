@@ -132,7 +132,7 @@ let auth = async (req, res) => {
   let { corpId, secret, agentid, domain } = await getConfig(activityId);
   getApi(corpId, secret, agentid, (err, api) => {
     let url = api.getAuthorizeURL(
-      `${domain}/qywx/oauth_response/${activityId}`,
+      `${domain}/api/qywx/oauth_response/${activityId}`,
       0,
       'snsapi_userinfo'
     );
@@ -140,11 +140,6 @@ let auth = async (req, res) => {
     req.session.save(function(err) {});
     return res.redirect(url);
   });
-};
-
-let touch = async (req, res) => {
-  let { user } = req.session;
-  return res.json(user);
 };
 
 let oauth_response = async (req, res) => {
@@ -161,8 +156,6 @@ let oauth_response = async (req, res) => {
         if (!userId) {
           userId = await getUserId(api, baseinfo.OpenId);
         }
-        console.log(baseinfo);
-        console.log(userId);
         api.getUser(userId, async (err, userinfo) => {
           let u = await saveOrUpdateWxUser(userinfo);
           let { callback } = req.session;
@@ -173,7 +166,7 @@ let oauth_response = async (req, res) => {
       } else {
         console.log('[qywx]企业登录失败 尝试用wx登录');
         let { callback } = req.session;
-        let url = `${domain}/wx/auth/${activityId}?callback=${callback}`;
+        let url = `${domain}/api/wx/auth/${activityId}?callback=${callback}`;
         return res.redirect(url);
       }
     });
@@ -184,4 +177,4 @@ let oauth_response = async (req, res) => {
 //   return res.json({ jsconfig: 1 });
 // };
 
-export { auth, touch, oauth_response /*, jsconfig*/ };
+export { auth, oauth_response /*, jsconfig*/ };
