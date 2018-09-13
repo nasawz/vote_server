@@ -1,17 +1,20 @@
 FROM node:carbon
 
-RUN mkdir -p /nasawz-server
-COPY ./dist /nasawz-server/
-COPY ./node_modules /nasawz-server/node_modules
-COPY ./package.json /nasawz-server/package.json
+RUN mkdir -p /vote_server
+COPY ./dist /vote_server/
+COPY ./node_modules /vote_server/node_modules
+COPY ./package.json /vote_server/package.json
 
-RUN mkdir -p /nasawz-server/config
-VOLUME /nasawz-server/config
+RUN mkdir -p /vote_server/config
+VOLUME /vote_server/config
 
-RUN mkdir -p /nasawz-server/cloud
-VOLUME /nasawz-server/cloud
+RUN mkdir -p /vote_server/cloud
+VOLUME /vote_server/cloud
 
-WORKDIR /nasawz-server
+RUN mkdir -p /vote_server/static
+VOLUME /vote_server/static
+
+WORKDIR /vote_server
 
 # RUN npm install && \
 #     npm run build
