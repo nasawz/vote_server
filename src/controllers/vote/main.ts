@@ -226,11 +226,170 @@ let myVoteItem = async (req, res) => {
     query.equalTo('owner', wxuser);
     query.equalTo('status', 0);
     let vote_item = await query.first();
-    if (vote_item) {
-      return res.json(vote_item);
-    } else {
-      return res.boom.notFound('not vote_item fond');
-    }
+    let pipeline = {
+      match: { status: 0, category: vote_item.toJSON().category },
+      sort: {
+        score: -1
+      },
+      group: {
+        objectId: null,
+        items: {
+          $push: {
+            _id: '$_id',
+            title: '$title',
+            score: '$score',
+            category: '$category',
+            desc: '$desc',
+            pic: '$pic'
+          }
+        }
+      },
+      unwind: {
+        path: '$items',
+        includeArrayIndex: 'items.rank'
+      },
+      project: {
+        objectId: '$items._id',
+        title: '$items.title',
+        score: '$items.score',
+        category: '$items.category',
+        desc: '$items.desc',
+        pic: '$items.pic',
+        rank: { $add: ['$items.rank', 1] }
+      }
+    };
+    const query_rank = new Parse.Query(VoteItem);
+    query_rank.equalTo('activity', activity);
+    query_rank
+      .aggregate(pipeline)
+      .then(function(results) {
+        let index = _.findIndex(results, function(r) {
+          return r.objectId == vote_item.toJSON().objectId;
+        });
+        if (index > -1) {
+          return res.json(results[index]);
+        } else {
+          return res.boom.notFound('not vote_item fond');
+        }
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
   });
 };
-export { addVote, delVoteItem, addVoteItem, myVoteItem };
+
+let getVoteItems = async (req, res) => {
+  let { activityId } = req.params;
+  let { limit = 10, skip = 0, category = '' } = req.query;
+  let pipeline = {
+    match: { status: 0, category: category },
+    sort: {
+      score: -1
+    },
+    group: {
+      objectId: null,
+      items: {
+        $push: {
+          _id: '$_id',
+          title: '$title',
+          score: '$score',
+          category: '$category',
+          desc: '$desc',
+          pic: '$pic'
+        }
+      }
+    },
+    unwind: {
+      path: '$items',
+      includeArrayIndex: 'items.rank'
+    },
+    project: {
+      objectId: '$items._id',
+      title: '$items.title',
+      score: '$items.score',
+      category: '$items.category',
+      desc: '$items.desc',
+      pic: '$items.pic',
+      rank: { $add: ['$items.rank', 1] }
+    },
+    limit: parseInt(limit),
+    skip: parseInt(skip)
+  };
+  const Activity = Parse.Object.extend('activity');
+  let activity = new Activity();
+  activity.id = activityId;
+  const VoteItem = Parse.Object.extend('vote_item');
+  const query = new Parse.Query(VoteItem);
+  query.equalTo('activity', activity);
+  query
+    .aggregate(pipeline)
+    .then(function(results) {
+      return res.json(results);
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+};
+
+let getVoteItemById = async (req, res) => {
+  let { activityId, id } = req.params;
+  let vote_item = await getVoteItem(id);
+  if (!vote_item) {
+    return res.boom.notFound('not vote_item fond');
+  }
+  let pipeline = {
+    match: { status: 0, category: vote_item.toJSON().category },
+    sort: {
+      score: -1
+    },
+    group: {
+      objectId: null,
+      items: {
+        $push: {
+          _id: '$_id',
+          title: '$title',
+          score: '$score',
+          category: '$category',
+          desc: '$desc',
+          pic: '$pic'
+        }
+      }
+    },
+    unwind: {
+      path: '$items',
+      includeArrayIndex: 'items.rank'
+    },
+    project: {
+      objectId: '$items._id',
+      title: '$items.title',
+      score: '$items.score',
+      category: '$items.category',
+      desc: '$items.desc',
+      pic: '$items.pic',
+      rank: { $add: ['$items.rank', 1] }
+    }
+  };
+  const Activity = Parse.Object.extend('activity');
+  let activity = new Activity();
+  activity.id = activityId;
+  const VoteItem = Parse.Object.extend('vote_item');
+  const query = new Parse.Query(VoteItem);
+  query.equalTo('activity', activity);
+  query
+    .aggregate(pipeline)
+    .then(function(results) {
+      let index = _.findIndex(results, function(r) {
+        return r.objectId == id;
+      });
+      if (index > -1) {
+        return res.json(results[index]);
+      } else {
+        return res.boom.notFound('not vote_item fond');
+      }
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+};
+
+export { addVote, delVoteItem, addVoteItem, myVoteItem, getVoteItems, getVoteItemById };
