@@ -44,14 +44,6 @@ let getVoteItemsByUser = user => {
 };
 
 let ckUser = (req, res, cb) => {
-  // !!!!!!!!!!!!!!!!!!!// !!!!!!!!!!!!!!!!!!!// !!!!!!!!!!!!!!!!!!!// !!!!!!!!!!!!!!!!!!!
-  // req.session.user = {
-  //   // objectId: 'vtDCKVLNKh'
-  //   objectId: 'mrt4GgJy8m' // 企业用户
-  // };
-  // req.session.save(function(err) {});
-  // !!!!!!!!!!!!!!!!!!!// !!!!!!!!!!!!!!!!!!!// !!!!!!!!!!!!!!!!!!!// !!!!!!!!!!!!!!!!!!!
-
   let { user } = req.session;
 
   if (user) {
@@ -226,6 +218,9 @@ let myVoteItem = async (req, res) => {
     query.equalTo('owner', wxuser);
     query.equalTo('status', 0);
     let vote_item = await query.first();
+    if (!vote_item) {
+      return res.boom.notFound('not vote_item fond');
+    }
     let pipeline = {
       match: { status: 0, category: vote_item.toJSON().category },
       sort: {
