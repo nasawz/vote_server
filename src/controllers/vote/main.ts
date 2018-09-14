@@ -196,8 +196,8 @@ let delVoteItem = async (req, res) => {
     }
     vote_item.set('status', -1);
     vote_item.save().then(
-      res => {
-        return res.json(res);
+      result => {
+        return res.json(result.toJSON());
       },
       err => {
         return res.boom.badRequest('del vote_item fail', err);
