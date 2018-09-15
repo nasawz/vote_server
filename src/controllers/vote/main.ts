@@ -60,6 +60,7 @@ let addVote = async (req, res) => {
     let { user } = req.session;
     let wxuser = await getWXUser(user.objectId);
     let vote_item = await getVoteItem(id);
+
     // 取得当前用户所有的投票项
     let vote_items = await getVoteItemsByUser(wxuser);
 
@@ -224,7 +225,8 @@ let myVoteItem = async (req, res) => {
     let pipeline = {
       match: { status: 0, category: vote_item.toJSON().category },
       sort: {
-        score: -1
+        score: -1,
+        createdAt: 1
       },
       group: {
         objectId: null,
@@ -279,7 +281,8 @@ let getVoteItems = async (req, res) => {
   let pipeline = {
     match: { status: 0, category: category },
     sort: {
-      score: -1
+      score: -1,
+      createdAt: 1
     },
     group: {
       objectId: null,
@@ -290,7 +293,8 @@ let getVoteItems = async (req, res) => {
           score: '$score',
           category: '$category',
           desc: '$desc',
-          pic: '$pic'
+          pic: '$pic',
+          createdAt: '$createdAt'
         }
       }
     },
@@ -305,6 +309,7 @@ let getVoteItems = async (req, res) => {
       category: '$items.category',
       desc: '$items.desc',
       pic: '$items.pic',
+      createdAt: '$items.createdAt',
       rank: { $add: ['$items.rank', 1] }
     },
     skip: parseInt(skip),
@@ -335,7 +340,8 @@ let getVoteItemById = async (req, res) => {
   let pipeline = {
     match: { status: 0, category: vote_item.toJSON().category },
     sort: {
-      score: -1
+      score: -1,
+      createdAt: 1
     },
     group: {
       objectId: null,
