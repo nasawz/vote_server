@@ -307,8 +307,8 @@ let getVoteItems = async (req, res) => {
       pic: '$items.pic',
       rank: { $add: ['$items.rank', 1] }
     },
-    limit: parseInt(limit),
-    skip: parseInt(skip)
+    skip: parseInt(skip),
+    limit: parseInt(limit)
   };
   const Activity = Parse.Object.extend('activity');
   let activity = new Activity();
