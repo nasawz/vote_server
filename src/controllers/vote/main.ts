@@ -279,7 +279,7 @@ let getVoteItems = async (req, res) => {
   let { activityId } = req.params;
   let { limit = 10, skip = 0, category = '' } = req.query;
   let pipeline = {
-    match: { status: 0, category: category },
+    match: { status: 0, category: category, _p_activity: `activity$${activityId}` },
     sort: {
       score: -1,
       createdAt: 1
@@ -315,12 +315,9 @@ let getVoteItems = async (req, res) => {
     skip: parseInt(skip),
     limit: parseInt(limit)
   };
-  const Activity = Parse.Object.extend('activity');
-  let activity = new Activity();
-  activity.id = activityId;
+
   const VoteItem = Parse.Object.extend('vote_item');
   const query = new Parse.Query(VoteItem);
-  query.equalTo('activity', activity);
   query
     .aggregate(pipeline)
     .then(function(results) {
