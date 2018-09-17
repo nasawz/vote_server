@@ -223,7 +223,11 @@ let myVoteItem = async (req, res) => {
       return res.boom.notFound('not vote_item fond');
     }
     let pipeline = {
-      match: { status: 0, category: vote_item.toJSON().category },
+      match: {
+        status: 0,
+        category: vote_item.toJSON().category,
+        _p_activity: `activity$${activityId}`
+      },
       sort: {
         score: -1,
         createdAt: 1
