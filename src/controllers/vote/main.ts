@@ -32,11 +32,12 @@ let getVoteItem: any = id => {
   });
 };
 
-let getVoteItemsByUser = user => {
+let getVoteItemsByUser = (user, activity) => {
   return new Promise(async (resolve, reject) => {
     const VoteItem = Parse.Object.extend('vote_item');
     const query = new Parse.Query(VoteItem);
     query.equalTo('voters', user);
+    query.equalTo('activity', activity);
     query.equalTo('status', 0);
     let vote_items = await query.find();
     resolve(vote_items);
@@ -62,7 +63,7 @@ let addVote = async (req, res) => {
     let vote_item = await getVoteItem(id);
 
     // 取得当前用户所有的投票项
-    let vote_items = await getVoteItemsByUser(wxuser);
+    let vote_items = await getVoteItemsByUser(wxuser, activity);
 
     /**
      * 规则验证
@@ -339,7 +340,11 @@ let getVoteItemById = async (req, res) => {
     return res.boom.notFound('not vote_item fond');
   }
   let pipeline = {
-    match: { status: 0, category: vote_item.toJSON().category },
+    match: {
+      status: 0,
+      category: vote_item.toJSON().category,
+      _p_activity: `activity$${activityId}`
+    },
     sort: {
       score: -1,
       createdAt: 1
