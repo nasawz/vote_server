@@ -166,6 +166,12 @@ let oauth_response = async (req, res) => {
           userId = await getUserId(api, baseinfo.OpenId);
         }
         api.getUser(userId, async (err, userinfo) => {
+          if (userinfo.errcode != 0) {
+            console.log('[qywx]企业登录无权限 尝试用wx登录', err);
+            let { callback } = req.session;
+            let url = `${domain}/api/wx/auth/${activityId}?callback=${callback}`;
+            return res.redirect(url);
+          }
           let u = await saveOrUpdateWxUser(userinfo);
           let { callback } = req.session;
           req.session.user = u;
