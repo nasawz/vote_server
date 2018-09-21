@@ -155,7 +155,7 @@ let getUserFromWX: any = (access_token, openid) => {
   });
 };
 
-let saveOrUpdateWxUser = async user => {
+let saveOrUpdateWxUser = async (user, parentId) => {
   user = Object.assign({}, user, { type: '1' });
   return new Promise(async (resolve, reject) => {
     const WXUser = Parse.Object.extend('wx_user');
@@ -176,6 +176,11 @@ let saveOrUpdateWxUser = async user => {
         });
     } else {
       const wxuser = new WXUser();
+      if (parentId != null) {
+        let parent = new WXUser();
+        parent.id = parentId;
+        wxuser.set('parent', parent);
+      }
       wxuser
         .save(user)
         .then(u => {
@@ -212,8 +217,15 @@ let oauth_response = async (req, res) => {
   let { appid, secret } = await getConfig(activityId);
   let { access_token, openid } = await getAccessTokenByCode(code, appid, secret);
   let wx_user = await getUserFromWX(access_token, openid);
-  let u = await saveOrUpdateWxUser(wx_user);
+
   let { callback } = req.session;
+  let reg = /-p_(.*)-/gi;
+  let _result = reg.exec(callback);
+  let parentId = null;
+  if (_result) {
+    parentId = _result[1];
+  }
+  let u = await saveOrUpdateWxUser(wx_user, parentId);
   req.session.user = u;
   req.session.save(function(err) {});
   return res.redirect(callback);

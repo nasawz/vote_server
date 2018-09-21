@@ -97,7 +97,7 @@ let getApi: any = async function(corpId, secret, agentid, callback) {
   callback(null, api);
 };
 
-let saveOrUpdateWxUser = async user => {
+let saveOrUpdateWxUser = async (user, parentId) => {
   user = Object.assign({}, user, { type: '2', headimgurl: user.avatar });
   _.unset(user, 'errcode');
   _.unset(user, 'errmsg');
@@ -120,6 +120,11 @@ let saveOrUpdateWxUser = async user => {
         });
     } else {
       const wxuser = new WXUser();
+      if (parentId != null) {
+        let parent = new WXUser();
+        parent.id = parentId;
+        wxuser.set('parent', parent);
+      }
       wxuser
         .save(user)
         .then(u => {
@@ -172,8 +177,14 @@ let oauth_response = async (req, res) => {
             let url = `${domain}/api/wx/auth/${activityId}?callback=${callback}`;
             return res.redirect(url);
           }
-          let u = await saveOrUpdateWxUser(userinfo);
           let { callback } = req.session;
+          let reg = /-p_(.*)-/gi;
+          let _result = reg.exec(callback);
+          let parentId = null;
+          if (_result) {
+            parentId = _result[1];
+          }
+          let u = await saveOrUpdateWxUser(userinfo, parentId);
           req.session.user = u;
           req.session.save(function(err) {});
           return res.redirect(callback);

@@ -10,6 +10,7 @@ import wxRoute from './controllers/wx/route';
 import qywxRoute from './controllers/qywx/route';
 import voteRoute from './controllers/vote/route';
 import userRoute from './controllers/user/route';
+import analysisRoute from './controllers/analysis/route';
 
 import QNAdapter from './QNAdapter';
 
@@ -48,6 +49,7 @@ wxRoute('/api/wx', app);
 qywxRoute('/api/qywx', app);
 voteRoute('/api/vote', app);
 userRoute('/api/user', app);
+analysisRoute('/api/analysis', app);
 
 app.listen(1337, function() {
   console.log('server running on port 1337.');
