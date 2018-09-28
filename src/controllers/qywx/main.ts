@@ -97,12 +97,15 @@ let getApi: any = async function(corpId, secret, agentid, callback) {
   callback(null, api);
 };
 
-let saveOrUpdateWxUser = async (user, parentId) => {
+let saveOrUpdateWxUser = async (user, parentId, activityId) => {
   user = Object.assign({}, user, { type: '2', headimgurl: user.avatar });
   _.unset(user, 'errcode');
   _.unset(user, 'errmsg');
   return new Promise(async (resolve, reject) => {
     const WXUser = Parse.Object.extend('wx_user');
+    const Activity = Parse.Object.extend('activity');
+    let activity = new Activity();
+    activity.id = activityId;
     const query = new Parse.Query(WXUser);
     query.equalTo('userid', user.userid);
     const results = await query.first();
@@ -110,6 +113,7 @@ let saveOrUpdateWxUser = async (user, parentId) => {
       _.forIn(user, function(value, key) {
         results.set(`${key}`, value);
       });
+      results.set('activity', activity);
       results
         .save()
         .then(u => {
@@ -125,6 +129,7 @@ let saveOrUpdateWxUser = async (user, parentId) => {
         parent.id = parentId;
         wxuser.set('parent', parent);
       }
+      wxuser.set('activity', activity);
       wxuser
         .save(user)
         .then(u => {
@@ -184,7 +189,7 @@ let oauth_response = async (req, res) => {
           if (_result) {
             parentId = _result[1];
           }
-          let u = await saveOrUpdateWxUser(userinfo, parentId);
+          let u = await saveOrUpdateWxUser(userinfo, parentId, activityId);
           req.session.user = u;
           req.session.save(function(err) {});
           return res.redirect(callback);
