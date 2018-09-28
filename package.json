@@ -1,6 +1,6 @@
 {
   "name": "vote_server",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "",
   "scripts": {
     "tsc": "tsc",
@@ -12,7 +12,7 @@
     "start": "node server.js",
     "cpconfig": "./node_modules/.bin/copy ./config.json dist",
     "watch": "npm run tsc-watch & ./node_modules/.bin/nodemon --watch dist dist/server.js",
-    "build:docker": "docker build --tag registry.cn-beijing.aliyuncs.com/nasawz/vote_server:1.1.1 ."
+    "build:docker": "docker build --tag registry.cn-beijing.aliyuncs.com/nasawz/vote_server:1.1.2 ."
   },
   "author": "nasawz",
   "license": "MIT",
