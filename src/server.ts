@@ -11,6 +11,7 @@ import qywxRoute from './controllers/qywx/route';
 import voteRoute from './controllers/vote/route';
 import userRoute from './controllers/user/route';
 import analysisRoute from './controllers/analysis/route';
+import countRoute from './controllers/count/route';
 
 import QNAdapter from './QNAdapter';
 
@@ -50,6 +51,7 @@ qywxRoute('/api/qywx', app);
 voteRoute('/api/vote', app);
 userRoute('/api/user', app);
 analysisRoute('/api/analysis', app);
+countRoute('/api/count', app);
 
 app.listen(1337, function() {
   console.log('server running on port 1337.');
