@@ -5,6 +5,16 @@ import axios from 'axios';
 import * as _ from 'lodash';
 axios.defaults.timeout = 60000;
 
+let getActivity: any = activityId => {
+  return new Promise(async (resolve, reject) => {
+    const Activity = Parse.Object.extend('activity');
+    const a_query = new Parse.Query(Activity);
+    a_query.equalTo('objectId', activityId);
+    let activity = await a_query.first();
+    resolve(activity);
+  });
+};
+
 let getConfig: any = activityId => {
   return new Promise(async (resolve, reject) => {
     const WXConfig = Parse.Object.extend('wx_config');
@@ -141,17 +151,24 @@ let getJsConfig = (api, param) => {
   });
 };
 
-let getUserFromWX: any = (access_token, openid) => {
+let getUserFromWX: any = (access_token, openid, api, rule) => {
   return new Promise((resolve, reject) => {
-    let url = `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openid}&lang=zh_CN`;
-    axios
-      .get(url)
-      .then(res => {
-        resolve(res.data);
-      })
-      .catch(err => {
-        reject(err);
+    if (rule == 1) {
+      api.getUser(openid, (err, wx_user) => {
+        if (err) reject(err);
+        resolve(wx_user);
       });
+    } else {
+      let url = `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openid}&lang=zh_CN`;
+      axios
+        .get(url)
+        .then(res => {
+          resolve(res.data);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    }
   });
 };
 
@@ -207,9 +224,14 @@ let index = async (req, res) => {
   let { appid, secret, domain } = await getConfig(activityId);
   req.session.callback = decodeURIComponent(callback);
   req.session.save(function(err) {});
+  let activity = await getActivity(activityId);
+  let scope = 'snsapi_userinfo';
+  if (activity.get_user_rule == 1) {
+    scope = 'snsapi_base';
+  }
   let url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${encodeURIComponent(
     `${domain}/api/wx/oauth_response/${activityId}`
-  )}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`;
+  )}&response_type=code&scope=${scope}&state=STATE#wechat_redirect`;
   return res.redirect(url);
 };
 
@@ -219,21 +241,25 @@ let oauth_response = async (req, res) => {
     return res.boom.badRequest('miss code');
   }
   let { activityId } = req.params;
+  let activity = await getActivity(activityId);
   let { appid, secret } = await getConfig(activityId);
   let { access_token, openid } = await getAccessTokenByCode(code, appid, secret);
-  let wx_user = await getUserFromWX(access_token, openid);
 
-  let { callback } = req.session;
-  let reg = /-p_(.*)-/gi;
-  let _result = reg.exec(callback);
-  let parentId = null;
-  if (_result) {
-    parentId = _result[1];
-  }
-  let u = await saveOrUpdateWxUser(wx_user, parentId, activityId);
-  req.session.user = u;
-  req.session.save(function(err) {});
-  return res.redirect(callback);
+  getApi(appid, secret, async (err, api) => {
+    let wx_user = await getUserFromWX(access_token, openid, api, activity.get_user_rule);
+
+    let { callback } = req.session;
+    let reg = /-p_(.*)-/gi;
+    let _result = reg.exec(callback);
+    let parentId = null;
+    if (_result) {
+      parentId = _result[1];
+    }
+    let u = await saveOrUpdateWxUser(wx_user, parentId, activityId);
+    req.session.user = u;
+    req.session.save(function(err) {});
+    return res.redirect(callback);
+  });
 };
 
 let jsconfig = async (req, res) => {
