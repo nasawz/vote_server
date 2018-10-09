@@ -12,7 +12,10 @@
     "start": "node server.js",
     "cpconfig": "./node_modules/.bin/copy ./config.json dist",
     "watch": "npm run tsc-watch & ./node_modules/.bin/nodemon --watch dist dist/server.js",
-    "build:docker": "docker build --tag registry.cn-beijing.aliyuncs.com/nasawz/vote_server:1.1.3 ."
+    "build:docker": "docker build --tag registry.cn-beijing.aliyuncs.com/nasawz/vote_server:1.1.3 .",
+    "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags",
+    "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags",
+    "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version patch && git push origin && git push origin --tags"
   },
   "author": "nasawz",
   "license": "MIT",
@@ -35,6 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "^10.9.3",
+    "generate-changelog": "^1.7.1",
     "nodemon": "^1.18.4",
     "prettier": "^1.14.2"
   }
